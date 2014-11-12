@@ -66,6 +66,7 @@ def scheme_apply(procedure, args, env):
         raise SchemeError("Cannot call {0}".format(str(procedure)))
 
 def apply_primitive(procedure, args, env):
+    #Needs additional doctests -CS
     """Apply PrimitiveProcedure PROCEDURE to a Scheme list of ARGS in ENV.
 
     >>> env = create_global_frame()
@@ -75,6 +76,19 @@ def apply_primitive(procedure, args, env):
     4
     """
     "*** YOUR CODE HERE ***"
+    def get_list(pairs):
+        if pairs== nil:
+            return []
+        else:
+            return [pairs.first] + get_list(pairs.second)
+    lst = get_list(args)
+    if procedure.use_env:
+        lst = lst + [env]
+    try:
+        return procedure.fn(*lst)
+    except TypeError as e:
+        raise SchemeError(e)
+        
 
 ################
 # Environments #
