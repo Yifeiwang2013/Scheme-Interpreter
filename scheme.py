@@ -110,9 +110,15 @@ class Frame:
             return "<{{{0}}} -> {1}>".format(', '.join(s), repr(self.parent))
 
     def lookup(self, symbol):
+        #Needs additional doctests -CS
         """Return the value bound to SYMBOL.  Errors if SYMBOL is not found."""
         "*** YOUR CODE HERE ***"
-        raise SchemeError("unknown identifier: {0}".format(str(symbol)))
+        if self.parent == None and not symbol in self.bindings:
+            raise SchemeError("unknown identifier: {0}".format(str(symbol)))
+        elif symbol in self.bindings:
+            return self.bindings[symbol]
+        else:
+            return Frame.lookup(self.parent, symbol)
 
 
     def global_frame(self):
