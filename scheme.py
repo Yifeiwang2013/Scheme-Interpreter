@@ -60,6 +60,8 @@ def scheme_apply(procedure, args, env):
         return apply_primitive(procedure, args, env)
     elif isinstance(procedure, LambdaProcedure):
         "*** YOUR CODE HERE ***"
+        new_frame = procedure.env.make_call_frame(procedure.formals, args)
+        return scheme_eval(procedure.body, new_frame)
     elif isinstance(procedure, MuProcedure):
         "*** YOUR CODE HERE ***"
     else:
@@ -77,7 +79,7 @@ def apply_primitive(procedure, args, env):
     """
     "*** YOUR CODE HERE ***"
     def get_list(pairs):
-        if pairs== nil:
+        if pairs == nil:
             return []
         else:
             return [pairs.first] + get_list(pairs.second)
@@ -141,6 +143,13 @@ class Frame:
         """
         frame = Frame(self)
         "*** YOUR CODE HERE ***"
+        if len(formals) != len(vals):
+            raise SchemeError("Didn't pass same amount formals and vars, doh") 
+        def make_bindings(formals, vals):
+            if formals != nil and vals != nil:
+                frame.define(formals.first, vals.first) 
+                make_bindings(formals.second, vals.second)
+        make_bindings(formals, vals) 
         return frame
 
     def define(self, sym, val):
@@ -171,6 +180,7 @@ class MuProcedure:
     """A procedure defined by a mu expression, which has dynamic scope.
      _________________
     < Scheme is cool! >
+     Cute moose :) --CS
      -----------------
             \   ^__^
              \  (oo)\_______
@@ -205,6 +215,11 @@ def do_lambda_form(vals, env):
     formals = vals[0]
     check_formals(formals)
     "*** YOUR CODE HERE ***"
+    if len(vals) > 2:
+        body = Pair("begin", vals.second)     
+    else:
+        body = vals.second.first
+    return LambdaProcedure(formals, body, env)
 
 def do_mu_form(vals):
     """Evaluate a mu form with parameters VALS."""
@@ -220,8 +235,20 @@ def do_define_form(vals, env):
     if scheme_symbolp(target):
         check_form(vals, 2, 2)
         "*** YOUR CODE HERE ***"
+        env.define(target, scheme_eval(vals[1], env))
+        return target
     elif isinstance(target, Pair):
         "*** YOUR CODE HERE ***"
+        if not scheme_symbolp(target.first):
+            raise SchemeError("bad argument to define")
+        formals = target.second
+        check_formals(formals)
+        target = target.first
+        body = vals.second
+        vals = Pair(formals, body) 
+        procedure = do_lambda_form(vals, env)
+        env.define(target, procedure) 
+        return target
     else:
         raise SchemeError("bad argument to define")
 
@@ -229,6 +256,7 @@ def do_quote_form(vals):
     """Evaluate a quote form with parameters VALS."""
     check_form(vals, 1, 1)
     "*** YOUR CODE HERE ***"
+    return vals[0]
 
 
 def do_let_form(vals, env):
@@ -297,9 +325,17 @@ def do_cond_form(vals, env):
     return okay
 
 def do_begin_form(vals, env):
+    #Needs additional tests CS
     """Evaluate begin form with parameters VALS in environment ENV."""
     check_form(vals, 1)
     "*** YOUR CODE HERE ***"
+    length = len(vals)
+    for val in vals:
+        length -= 1
+        if length== 0:
+            return val
+        else:
+            scheme_eval(val, env)
 
 LOGIC_FORMS = {
         "and": do_and_form,
@@ -331,6 +367,17 @@ def check_formals(formals):
     >>> check_formals(read_line("(a b c)"))
     """
     "*** YOUR CODE HERE ***"
+    def do_check_formals(formals, formalslist=[]):
+        if formals == nil:
+            return True
+        elif not scheme_symbolp(formals.first):
+            raise SchemeError("Not all formals are symbols, doh") 
+        elif formals.first in formalslist:
+            raise SchemeError("One of the formals has been repeated, doh")
+        else:
+            formalslist += [formals.first]
+            return do_check_formals(formals.second, formalslist)
+    return do_check_formals(formals) 
 
 ##################
 # Tail Recursion #
