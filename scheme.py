@@ -145,11 +145,15 @@ class Frame:
         "*** YOUR CODE HERE ***"
         if len(formals) != len(vals):
             raise SchemeError("Didn't pass same amount formals and vars, doh") 
-        def make_bindings(formals, vals):
-            if formals != nil and vals != nil:
-                frame.define(formals.first, vals.first) 
-                make_bindings(formals.second, vals.second)
-        make_bindings(formals, vals) 
+        #def make_bindings(formals, vals):
+        #    if formals != nil and vals != nil:
+        #        frame.define(formals.first, vals.first) 
+        #        make_bindings(formals.second, vals.second)
+        #make_bindings(formals, vals) 
+        #return frame
+        
+        for i in range(len(formals)):
+            frame.define(formals[i], vals[i])
         return frame
 
     def define(self, sym, val):
@@ -268,8 +272,15 @@ def do_let_form(vals, env):
         raise SchemeError("bad bindings list in let form")
 
     # Add a frame containing bindings
-    names, values = nil, nil
     "*** YOUR CODE HERE ***"
+    def get_names(bindings, names=[], values=[]):
+        if bindings == nil:
+            return names, values 
+        pair = bindings.first
+        if len(pair) != 2 or not scheme_symbolp(pair.first):
+            raise SchemeError('Invalid binding') 
+        return get_names(bindings.second, names + [pair[0]], values + [scheme_eval(pair[1], env)])
+    names, values = get_names(bindings)    
     new_env = env.make_call_frame(names, values)
 
     # Evaluate all but the last expression after bindings, and return the last
@@ -284,13 +295,32 @@ def do_let_form(vals, env):
 #########################
 
 def do_if_form(vals, env):
+    #Needs additional doc tests
     """Evaluate if form with parameters VALS in environment ENV."""
     check_form(vals, 2, 3)
     "*** YOUR CODE HERE ***"
+    length = len(vals)
+    if not scheme_false(scheme_eval(vals[0], env)):
+        return vals[1]
+    elif length < 3:
+        return okay
+    else:
+        return vals[2]
+        
 
 def do_and_form(vals, env):
+    #Needs additional doctests --CS
     """Evaluate short-circuited and with parameters VALS in environment ENV."""
     "*** YOUR CODE HERE ***"
+    if vals == nil:
+        return True
+    elif scheme_false(scheme_eval(vals.first, env)):
+        return False
+    elif vals.second == nil:
+        return quote(vals.first)
+    else:
+        return do_and_form(vals.second, env) 
+        
 
 def quote(value):
     """Return a Scheme expression quoting the Scheme VALUE.
@@ -304,10 +334,31 @@ def quote(value):
     return Pair("quote", Pair(value, nil))
 
 def do_or_form(vals, env):
+    #Need additional doctests --CS
     """Evaluate short-circuited or with parameters VALS in environment ENV."""
     "*** YOUR CODE HERE ***"
+    #if vals == nil:
+    #    return False
+    #elif not scheme_false(scheme_eval(vals.first, env)):
+        #return quote(vals.first) 
+    #elif vals.second == nil:
+    #    return False 
+    #else:
+    #    return do_or_form(vals.second, env) 
+
+    if vals == nil:
+        return False
+    procedure = scheme_eval(vals.first, env)
+    if not scheme_false(procedure):
+        return quote(procedure)
+    if vals.second == nil:
+        return vals.first
+    else:
+        return do_or_form(vals.second, env)
+    
 
 def do_cond_form(vals, env):
+    #Needs additional doctests --CS
     """Evaluate cond form with parameters VALS in environment ENV."""
     num_clauses = len(vals)
     for i, clause in enumerate(vals):
@@ -322,6 +373,8 @@ def do_cond_form(vals, env):
             test = scheme_eval(clause.first, env)
         if scheme_true(test):
             "*** YOUR CODE HERE ***"
+            length = len(clause) - 1
+            return clause[length]
     return okay
 
 def do_begin_form(vals, env):
