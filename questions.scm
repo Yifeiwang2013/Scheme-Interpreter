@@ -26,8 +26,8 @@
 ; Problem 18
 ;; Turns a list of pairs into a pair of lists
 (define (zip pairs)
-  'YOUR-CODE-HERE
-  )
+    (cons (apply-to-all car pairs) (cons (apply-to-all cadr pairs) nil))
+)
 
 (zip '())
 ; expect (() ())
@@ -41,8 +41,15 @@
 ;; A list of all ways to partition TOTAL, where  each partition must
 ;; be at most MAX-VALUE and there are at most MAX-PIECES partitions.
 (define (list-partitions total max-pieces max-value)
-  'YOUR-CODE-HERE
-  )
+    (define (make-partitions lst total mp mv) ;Let's shorten some variable names here :) mp = max-pieces and mv = max-values
+        (cond ((= total 0) (list lst))
+            ((< total 0) '())
+            ((<= mv 0) '())
+            ((equal? mp 0) '())
+            (else (append (make-partitions (append lst (list mv)) (- total mv) (- mp 1) mv)
+            (make-partitions lst total mp (- mv 1))))))
+    (make-partitions '() total max-pieces max-value)
+)
 
 (list-partitions 5 2 4)
 ; expects a permutation of ((4 1) (3 2))
@@ -121,7 +128,3 @@
 (define (hax d k)
   'YOUR-CODE-HERE
   nil)
-
-
-
-

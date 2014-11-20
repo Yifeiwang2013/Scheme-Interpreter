@@ -438,8 +438,8 @@ def check_formals(formals):
             raise SchemeError("One of the formals has been repeated, doh")
         else:
             formalslist += [formals.first]
-            return do_check_formals(formals.second, formalslist)
-    return do_check_formals(formals) 
+            do_check_formals(formals.second, formalslist)
+    do_check_formals(formals) 
 
 ##################
 # Tail Recursion #
