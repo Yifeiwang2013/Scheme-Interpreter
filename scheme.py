@@ -63,7 +63,10 @@ def scheme_apply(procedure, args, env):
         new_frame = procedure.env.make_call_frame(procedure.formals, args)
         return scheme_eval(procedure.body, new_frame)
     elif isinstance(procedure, MuProcedure):
+        #Needs additional doctests -CS
         "*** YOUR CODE HERE ***"
+        new_frame = env.make_call_frame(procedure.formals, args)
+        return scheme_eval(procedure.body, new_frame)
     else:
         raise SchemeError("Cannot call {0}".format(str(procedure)))
 
@@ -226,11 +229,17 @@ def do_lambda_form(vals, env):
     return LambdaProcedure(formals, body, env)
 
 def do_mu_form(vals):
+    #Needs additional doctests -CS
     """Evaluate a mu form with parameters VALS."""
     check_form(vals, 2)
     formals = vals[0]
     check_formals(formals)
     "*** YOUR CODE HERE ***"
+    if len(vals) > 2:
+        body = Pair("begin", vals.second)
+    else:
+        body = vals.second.first
+    return MuProcedure(formals, body)
 
 def do_define_form(vals, env):
     """Evaluate a define form with parameters VALS in environment ENV."""
