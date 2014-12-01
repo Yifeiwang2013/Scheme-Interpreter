@@ -9,6 +9,197 @@
 ;;; **********************************
 ;;; *** Add more of your own here! ***
 ;;; **********************************
+;Additional Tests by CS
+(load 'questions.scm)
+; #17-------------------------------------
+(define m (mu (x) (+ x (* z x))))
+(define g (lambda (x z) (m (* x x))))
+(g 10 -1)
+; #expect 0
+; #18-------------------------------------
+(zip '((-3 2) (0 4)))
+; expect ((-3 0) (2 4))
+(zip '((9 3) (3 4) (0 2)))
+; expect ((9 3 0) (3 4 2))
+; #19-------------------------------------
+(list-partitions 1 2 4) 
+; expect ((1))
+(list-partitions 10 2 9)
+; expect ((9 1) (8 2) (7 3) (6 4) (5 5))
+
+(define (cddr s)
+(cdr (cdr s)))
+
+(define (cadr s)
+(car (cdr s)))
+
+(define (caddr s)
+(car (cddr s)))
+
+(define (tree entry left right) (list entry left right))
+(define (entry t) (car t))
+(define (left t) (cadr t))
+(define (right t) (caddr t))
+(define (empty? s) (null? s))
+(define (leaf entry) (tree entry nil nil))
+(define (in? t v)
+(cond ((empty? t) false)
+((= (entry t) v) true)
+((< (entry t) v) (in? (right t) v))
+((> (entry t) v) (in? (left t) v))
+))
+
+(define odd-tree (tree 3 (leaf 1)
+(tree 7 (leaf 5)
+(tree 9 nil (leaf 11)))))
+
+
+(define (as-list t)
+(define (extend t s)
+(if (empty? t) s
+  (extend (left t)
+  (cons (entry t) (extend (right t) s)))))
+  (extend t nil)
+  )
+
+(as-list odd-tree)
+; expect (1 3 5 7 9 11)
+(as-list (right odd-tree))
+; expect (5 7 9 11)
+
+
+(define (intersect s t)
+(cond ((or (empty? s) (empty? t)) nil)
+((= (car s) (car t)) (cons (car s) (intersect (cdr s) (cdr t))))
+((< (car s) (car t)) (intersect (cdr s) t))
+((> (car s) (car t)) (intersect s (cdr t)))
+))
+
+(define eight (list 1 2 3 4 5 6 7 8))
+
+
+(define (union s t)
+(cond ((empty? s) t)
+((empty? t) s)
+((= (car s) (car t)) (cons (car s) (union (cdr s) (cdr t))))
+((< (car s) (car t)) (cons (car s) (union (cdr s) t)))
+((> (car s) (car t)) (cons (car t) (union s (cdr t))))
+))
+(define odds (list 3 5 7 9))
+(union odds (list 2 3 4 5))
+; expect (2 3 4 5 7 9)
+(union odds (list 2 4 6 8))
+; expect (2 3 4 5 6 7 8 9)
+(union odds eight)
+; expect (1 2 3 4 5 6 7 8 9)
+
+
+;;;PROPER NESTING;;;
+(cons (cons (cons (cons 1 (cons 2 nil)) nil) nil) nil)
+; expect ((((1 2))))
+;q1
+'bagel
+; expect bagel
+;'bagel'
+;; expect bagel
+
+;q2
+(cons 1 (cons 2 3))
+; expect (1 2 . 3)
+(cons 3 (cons 4 5))
+; expect (3 4 . 5)
+(cons (cons 1 2) (cons 3 4))
+;expect ((1 . 2) 3 . 4)
+
+;q3
+(define alist (cons 1 (cons 2 3)))
+; expect alist
+(car alist)
+; expect 1
+(cdr alist)
+; expect (2 . 3)
+(+ (- (car alist) (cadr alist)) (cddr alist))
+; expect 2
+
+;q4
++
+; expect #[primitive]
+(+ 1 2)
+; expect 3
+(* 3 4 (- 5 2) 1)
+; expect 36
+(odd? 31)
+; expect True
+(+ 1)
+; expect 1
+(* 3)
+; expect 3
+(+ (* 3 3) (* 4 4))
+; expect 25
+(define a (define b 3))
+; expect a
+a
+; expect b
+
+
+;q5
+(define tau (* 2 3.1415926))
+; expect tau
+
+(define a 1)
+; expect a
+a
+; expect 1
+(define b a)
+; expect b
+b
+; expect 1
+(define c 'a)
+; expect c
+c
+; expect a
+
+
+;q9
+(define (f x) (define (g y) (define (h z) (+ x y z))h)g)
+;expect f
+(f 3)
+;expect g
+((f 3) 3)
+;expect h
+(((f 3) 3 ) 3 )
+;expect 9
+(((f (+ 3 3)) (* 4 4) ) (- 5 5) )
+;expect 2
+
+;q12
+
+(cond (12))
+;expect 12
+(cond ((= 4 3)) ('hi))
+
+;q10
+((lambda (f x y) (f x y)) (lambda (y x) (- y x)) 2 1)
+; expect 1
+
+;q13
+(if #f #f #t)
+;expect True
+(if (= 4 4) 
+  (if (= 4 2) #t #f)
+   (1/0))
+; expect False
+
+
+;q14
+(and #t (or #t 1/0) (and #f 1/0) 1/0)
+; expect False
+(and #t (or #t (and 1/0 #t)) (or (or #f #t 1/0) 1/0))
+; expect True
+(and #t (or 1/0 (and 1/0 #t)) (or (or #f #t 1/0) 1/0))
+; expect Error
+
+
 
 ;;; These are examples from several sections of "The Structure
 ;;; and Interpretation of Computer Programs" by Abelson and Sussman.
@@ -58,7 +249,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Move the following (exit) line to run additional tests. ;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(exit)
 
 
 ;;; 1.1.2
@@ -574,6 +764,8 @@ one-through-four
     (+ 1 (len (cdr s)))))
 (len '(1 2 3 4))
 ; expect 4
+
+(exit)
 
 
 ;;;;;;;;;;;;;;;;;;;;

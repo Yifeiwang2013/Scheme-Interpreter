@@ -323,10 +323,10 @@ def do_and_form(vals, env):
     "*** YOUR CODE HERE ***"
     if vals == nil:
         return True
+    if vals.second == nil: 
+        return vals.first
     elif scheme_false(scheme_eval(vals.first, env)):
         return False
-    elif vals.second == nil:
-        return quote(vals.first)
     else:
         return do_and_form(vals.second, env) 
         
@@ -354,7 +354,8 @@ def do_or_form(vals, env):
     #    return False 
     #else:
     #    return do_or_form(vals.second, env) 
-
+   
+    
     if vals == nil:
         return False
     procedure = scheme_eval(vals.first, env)
@@ -364,7 +365,16 @@ def do_or_form(vals, env):
         return vals.first
     else:
         return do_or_form(vals.second, env)
-    
+    """  
+    if vals is nil:
+        return False
+    while vals.second is not nil:
+        a = scheme_eval(vals[0], env)
+        if scheme_true(a):
+            return quote(a)
+        vals = vals.second
+    return vals[0]  
+    """ 
 
 def do_cond_form(vals, env):
     #Needs additional doctests --CS
@@ -382,8 +392,18 @@ def do_cond_form(vals, env):
             test = scheme_eval(clause.first, env)
         if scheme_true(test):
             "*** YOUR CODE HERE ***"
-            length = len(clause) - 1
-            return clause[length]
+            if clause.second:
+                return do_begin_form(clause.second, env)
+            else:
+               return test
+            """
+            if not clause.second == nil:
+                if len(clause.second) < 2:
+                   return clause[1]
+                return scheme_eval(do_begin_form(clause.second, env), env)
+            else:
+                return quote(test)
+            """
     return okay
 
 def do_begin_form(vals, env):
@@ -466,6 +486,7 @@ def scheme_optimized_eval(expr, env):
         if (scheme_symbolp(first) # first might be unhashable
             and first in LOGIC_FORMS):
             "*** YOUR CODE HERE ***"
+            expr=LOGIC_FORMS[first](rest, env)
         elif first == "lambda":
             return do_lambda_form(rest, env)
         elif first == "mu":
@@ -476,13 +497,26 @@ def scheme_optimized_eval(expr, env):
             return do_quote_form(rest)
         elif first == "let":
             "*** YOUR CODE HERE ***"
+            expr, env = do_let_form(rest, env) #CS  
         else:
             "*** YOUR CODE HERE ***"
+            procedure = scheme_eval(first, env)
+            args = rest.map(lambda operand: scheme_eval(operand, env))
+            if isinstance(procedure, PrimitiveProcedure):
+                return apply_primitive(procedure, args, env)
+            elif isinstance(procedure, LambdaProcedure):
+                env = procedure.env.make_call_frame(procedure.formals, args)
+                expr = procedure.body
+            elif isinstance(procedure, MuProcedure):
+                env = env.make_call_frame(procedure.formals, args)
+                expr = procedure.body
+            else:
+                raise SchemeError("not working") 
 
 ################################################################
 # Uncomment the following line to apply tail call optimization #
 ################################################################
-# scheme_eval = scheme_optimized_eval
+scheme_eval = scheme_optimized_eval
 
 
 ################
